@@ -7,11 +7,6 @@
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
     <string name="tomorrow">Tomorrow</string>
-    <string name="champions_league">UEFA Champions League</string>
-    <string name="bundesliga">Bundesliga</string>
-    <string name="premierleague">Premier League</string>
-    <string name="primeradivison">Primera Division</string>
-    <string name="seriaa">Serie A</string>
     <string name="matchday_text">Match day</string>
     <string name="group_stage_text">Group stages</string>
     <string name="first_knockout_round">First knockout round</string>
@@ -30,7 +25,7 @@
 
         During the off season, fake data will be added to the app.
     </string>
-    <string name="widget_text">This is a widget probably.</string>
-
     <string name="no_connection">We can\'t connect to the internet.\r\nPlease check your connection and try again.</string>
+    <string name="add_widget">Add widget</string>
+    <string name="no_matches">No games found</string>
 </resources>

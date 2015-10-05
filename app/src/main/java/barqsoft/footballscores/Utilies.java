@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 
 import barqsoft.footballscores.service.FetchService;
 
@@ -62,6 +63,7 @@ public class Utilies {
     public static final int PRIMERA_DIVISION = 358;
     public static final int BUNDESLIGA = 351;
     private static RequestQueue mQueue;
+    private static HashMap<String, AsyncTask> mIconTasks = new HashMap<>();
 
     public static String getLeague(int league_num) {
         switch (league_num) {
@@ -199,12 +201,9 @@ public class Utilies {
             if (iconUrl != null && iconUrl.endsWith(".svg")) {
                 addByteArraySvgFromUrl(context, iconUrl, teamIconUrlValues);
             }
-            Log.i(TAG, "teamUrlValues=" + teamIconUrlValues);
             if (teamIconUrlValues != null && teamIconUrlValues.size() > 1) {
                 context.getContentResolver().insert(DatabaseContract.icons_table.buildIconUrls(), teamIconUrlValues);
             }
-        } else {
-            Log.i(TAG, "team " + teamName + " was found in db");
         }
 
         a.close();
@@ -271,22 +270,28 @@ public class Utilies {
 
     public static void getTeamIconUrlAsync(final Context context, final String teamName, final String teamDataUrl) {
 
-        Log.i(TAG, "getting icon for " + teamName + " from " + teamDataUrl);
+        AsyncTask task = mIconTasks.get(teamName);
 
-        new AsyncTask<Object, Integer, String>() {
-            @Override
-            protected String doInBackground(final Object... params) {
+        if (task == null || task.getStatus() == AsyncTask.Status.FINISHED) {
 
-                final Context context = (Context) params[0];
-                final String teamName = (String) params[1];
-                final String teamDataUrl = (String) params[2];
+            task = new AsyncTask<Object, Integer, String>() {
+                @Override
+                protected String doInBackground(final Object... params) {
 
-                if (Utilies.isConnected(context)) {
-                    Utilies.insertTeamIconLinksToDb(context, teamName, teamDataUrl, context.getString(R.string.api_key));
+                    final Context context = (Context) params[0];
+                    final String teamName = (String) params[1];
+                    final String teamDataUrl = (String) params[2];
+
+                    if (Utilies.isConnected(context)) {
+                        Utilies.insertTeamIconLinksToDb(context, teamName, teamDataUrl, context.getString(R.string.api_key));
+                    }
+                    return null;
                 }
-                return null;
-            }
-        }.execute(context.getApplicationContext(), teamName, teamDataUrl);
+            }.execute(context.getApplicationContext(), teamName, teamDataUrl);
+
+            mIconTasks.put(teamName, task);
+
+        }
     }
 
     public static void getTeamSVGIconAsync(final Context context, final String teamName, final String iconUrl) {
@@ -303,7 +308,6 @@ public class Utilies {
                     final ContentValues cv = new ContentValues();
                     cv.put(DatabaseContract.icons_table.TEAM_NAME_COL, teamName);
                     addByteArraySvgFromUrl(context, iconUrl, cv);
-                    Log.i(TAG, "got SVG image teamUrlValues=" + cv);
                     if (cv.size() > 1) {
                         context.getContentResolver().insert(DatabaseContract.icons_table.buildIconUrls(), cv);
                     }
@@ -316,7 +320,7 @@ public class Utilies {
     private static void addByteArraySvgFromUrl(final Context context, final String url, final ContentValues values) {
         if (url != null && url.endsWith(".svg")) {
 
-            final StringRequest stringRequest = new StringRequest(Request.Method.GET, url.replace("http:","https:"),
+            final StringRequest stringRequest = new StringRequest(Request.Method.GET, url.replace("http:", "https:"),
 
                     new Response.Listener<String>() {
                         @Override
@@ -329,15 +333,17 @@ public class Utilies {
 
                                     if (svg != null) {
                                         final int imageSize = (int) context.getResources().getDimension(R.dimen.team_crest_size);
-                                        svg.setDocumentHeight(imageSize);
-                                        svg.setDocumentWidth(imageSize);
                                         final Canvas canvas = new Canvas();
-                                        final Bitmap bmp = Bitmap.createBitmap(imageSize, imageSize, Bitmap.Config.ARGB_8888);
+                                        final int width = (int) Math.max(Math.ceil(svg.getDocumentWidth()), imageSize);
+                                        final int height = (int) Math.max(Math.ceil(svg.getDocumentHeight()), imageSize);
+                                        final Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                                         canvas.setBitmap(bmp);
                                         svg.renderToCanvas(canvas);
                                         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                                        bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                        final Bitmap scaled = Bitmap.createScaledBitmap(bmp, imageSize, imageSize, false);
                                         bmp.recycle();
+                                        scaled.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                        scaled.recycle();
                                         values.put(DatabaseContract.icons_table.IMAGE_BLOB, stream.toByteArray());
                                         stream.flush();
                                         stream.close();
@@ -346,7 +352,7 @@ public class Utilies {
                                         }
                                     }
                                 } else {
-                                    Log.i(TAG, "url " + url + " returned no content");
+                                    Log.e(TAG, "url " + url + " returned no content");
                                 }
                             } catch (SVGParseException e) {
                                 e.printStackTrace();

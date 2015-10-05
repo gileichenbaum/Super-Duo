@@ -11,7 +11,7 @@ import barqsoft.footballscores.DatabaseContract.scores_table;
  */
 public class ScoresDBHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "Scores.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 1;
 
     public ScoresDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -41,6 +41,15 @@ public class ScoresDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        recreateTable(db);
+    }
+
+    @Override
+    public void onDowngrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
+        recreateTable(db);
+    }
+
+    private void recreateTable(final SQLiteDatabase db) {
         //Remove old values when upgrading.
         db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.SCORES_TABLE);
         createTable(db);

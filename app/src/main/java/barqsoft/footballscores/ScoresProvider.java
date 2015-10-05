@@ -7,9 +7,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.util.Log;
-
-import java.util.Arrays;
 
 /**
  * Created by yehya khaled on 2/25/2015.
@@ -117,7 +114,6 @@ public class ScoresProvider extends ContentProvider {
                         projection, null, null, null, null, sortOrder);
                 break;
             case MATCHES_WITH_DATE:
-                Log.v(TAG, "args=" + (selectionArgs == null ? "null" : Arrays.toString(selectionArgs)));
                 retCursor = mScoresOpenHelper.getReadableDatabase().query(
                         DatabaseContract.SCORES_TABLE,
                         projection, SCORES_BY_DATE, selectionArgs, null, null, sortOrder);
