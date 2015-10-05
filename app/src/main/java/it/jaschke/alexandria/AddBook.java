@@ -51,8 +51,39 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
     private int mSnackbarBottomMargin;
     private Snackbar mSnackbar;
     private View mScanBtn;
+    private boolean mIsOnBackground;
+    private TextWatcher mTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            //no need
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            //no need
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            if (!mIsOnBackground) {
+                startSearch(s);
+            }
+        }
+    };
 
     public AddBook() {
+    }
+
+    @Override
+    public void onPause() {
+        mIsOnBackground = true;
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        mIsOnBackground = false;
+        super.onResume();
     }
 
     @Override
@@ -115,23 +146,7 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         ean = (EditText) rootView.findViewById(R.id.ean);
 
         mBookTitleTxt = (TextView) rootView.findViewById(R.id.bookTitle);
-
-        ean.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                //no need
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //no need
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                startSearch(s);
-            }
-        });
+        ean.addTextChangedListener(mTextWatcher);
 
         mScanBtn = rootView.findViewById(R.id.scan_button);
         mScanBtn.setOnClickListener(new View.OnClickListener() {
@@ -170,6 +185,14 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         return rootView;
     }
 
+    @Override
+    public void onDestroyView() {
+        if (ean != null) {
+            ean.removeTextChangedListener(mTextWatcher);
+        }
+        super.onDestroyView();
+    }
+
     private void startSearch(final Editable s) {
         String ean = s.toString();
 
@@ -199,7 +222,10 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
     }
 
     private void restartLoader() {
-        getLoaderManager().restartLoader(LOADER_ID, null, this);
+        final LoaderManager loaderManager = getLoaderManager();
+        if (loaderManager != null && loaderManager.hasRunningLoaders()) {
+            loaderManager.restartLoader(LOADER_ID, null, this);
+        }
     }
 
     @Override

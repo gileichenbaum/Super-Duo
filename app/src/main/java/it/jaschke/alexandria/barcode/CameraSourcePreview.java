@@ -39,9 +39,6 @@ public class CameraSourcePreview extends ViewGroup {
     private boolean mSurfaceAvailable;
     private CameraSource mCameraSource;
 
-    private GraphicOverlay mOverlay;
-    private BarcodeResultListener mBarcodeResultListener;
-
     public CameraSourcePreview(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
@@ -66,11 +63,6 @@ public class CameraSourcePreview extends ViewGroup {
         }
     }
 
-    public void start(CameraSource cameraSource, GraphicOverlay overlay) throws IOException {
-        mOverlay = overlay;
-        start(cameraSource);
-    }
-
     public void stop() {
         if (mCameraSource != null) {
             mCameraSource.stop();
@@ -88,19 +80,6 @@ public class CameraSourcePreview extends ViewGroup {
         if (mStartRequested && mSurfaceAvailable) {
             mCameraSource.start(mSurfaceView.getHolder());
             VisionApiFix.cameraFocus(mCameraSource, Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-            if (mOverlay != null) {
-                Size size = mCameraSource.getPreviewSize();
-                int min = Math.min(size.getWidth(), size.getHeight());
-                int max = Math.max(size.getWidth(), size.getHeight());
-                if (isPortraitMode()) {
-                    // Swap width and height sizes when in portrait, since it will be rotated by
-                    // 90 degrees
-                    mOverlay.setCameraInfo(min, max, mCameraSource.getCameraFacing());
-                } else {
-                    mOverlay.setCameraInfo(max, min, mCameraSource.getCameraFacing());
-                }
-                mOverlay.clear();
-            }
             mStartRequested = false;
         }
     }
@@ -128,8 +107,8 @@ public class CameraSourcePreview extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        int width = 320;
-        int height = 240;
+        int width = right - left;
+        int height = bottom - top;
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
             if (size != null) {
@@ -149,17 +128,17 @@ public class CameraSourcePreview extends ViewGroup {
         final int layoutHeight = bottom - top;
 
         // Computes height and width for potentially doing fit width.
-        int childWidth = layoutWidth;
+       /* int childWidth = layoutWidth;
         int childHeight = (int) (((float) layoutWidth / (float) width) * height);
 
         // If height is too tall using fit width, does fit height instead.
         if (childHeight > layoutHeight) {
             childHeight = layoutHeight;
             childWidth = (int) (((float) layoutHeight / (float) height) * width);
-        }
+        }*/
 
         for (int i = 0; i < getChildCount(); ++i) {
-            getChildAt(i).layout(0, 0, childWidth, childHeight);
+            getChildAt(i).layout(0, 0, layoutWidth, layoutHeight);
         }
 
         try {

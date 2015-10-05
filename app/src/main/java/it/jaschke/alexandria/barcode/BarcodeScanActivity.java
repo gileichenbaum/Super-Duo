@@ -64,7 +64,6 @@ public final class BarcodeScanActivity extends AppCompatActivity {
 
     private CameraSource mCameraSource = null;
     private CameraSourcePreview mPreview;
-    private GraphicOverlay mGraphicOverlay;
 
     /**
      * Initializes the UI and creates the detector pipeline.
@@ -75,7 +74,6 @@ public final class BarcodeScanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_barcode_scan);
 
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
-        mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
 
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.
@@ -112,7 +110,7 @@ public final class BarcodeScanActivity extends AppCompatActivity {
             }
         };
 
-        Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale, Snackbar.LENGTH_INDEFINITE).setAction(R.string.ok, listener).show();
+        Snackbar.make(mPreview, R.string.permission_camera_rationale, Snackbar.LENGTH_INDEFINITE).setAction(R.string.ok, listener).show();
     }
 
     /**
@@ -263,7 +261,7 @@ public final class BarcodeScanActivity extends AppCompatActivity {
 
         if (mCameraSource != null) {
             try {
-                mPreview.start(mCameraSource, mGraphicOverlay);
+                mPreview.start(mCameraSource);
             } catch (IOException e) {
                 Log.e(TAG, "Unable to start camera source.", e);
                 mCameraSource.release();
