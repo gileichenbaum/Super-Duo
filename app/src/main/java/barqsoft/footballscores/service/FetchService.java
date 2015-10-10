@@ -1,6 +1,7 @@
 package barqsoft.footballscores.service;
 
 import android.app.IntentService;
+import android.appwidget.AppWidgetManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -61,6 +62,7 @@ public class FetchService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         getData("n2");
         getData("p2");
+        sendBroadcast(new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE));
     }
 
     private void getData(String timeFrame) {
@@ -84,7 +86,7 @@ public class FetchService extends IntentService {
                 if (matches.length() == 0) {
                     //if there is no data, call the function on dummy data
                     //this is expected behavior during the off season.
-                    processJSONdata(getString(R.string.dummy_data), getApplicationContext(), false);
+//                    processJSONdata(getString(R.string.dummy_data), getApplicationContext(), false);
                     return;
                 }
 

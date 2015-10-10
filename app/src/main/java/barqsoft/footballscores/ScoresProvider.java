@@ -21,13 +21,10 @@ public class ScoresProvider extends ContentProvider {
     private static final int ICON_URLS_WITH_TEAM_NAMES = 201;
     private static final int ICON_URLS = 202;
     private UriMatcher muriMatcher = buildUriMatcher();
-    private static final SQLiteQueryBuilder ScoreQuery =
-            new SQLiteQueryBuilder();
+    private static final SQLiteQueryBuilder ScoreQuery = new SQLiteQueryBuilder();
     private static final String SCORES_BY_LEAGUE = DatabaseContract.scores_table.LEAGUE_COL + " = ?";
-    private static final String SCORES_BY_DATE =
-            DatabaseContract.scores_table.DATE_COL + " LIKE ?";
-    private static final String SCORES_BY_ID =
-            DatabaseContract.scores_table.MATCH_ID + " = ?";
+    public static final String SCORES_BY_DATE = DatabaseContract.scores_table.DATE_COL + " LIKE ?";
+    private static final String SCORES_BY_ID = DatabaseContract.scores_table.MATCH_ID + " = ?";
 
     private static final String ICON_BY_TEAM_NAME = DatabaseContract.icons_table.TEAM_NAME_COL + " = ?";
     private static final String ICON_BY_ID = DatabaseContract.icons_table._ID + " = ?";

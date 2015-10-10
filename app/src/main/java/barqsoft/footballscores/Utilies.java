@@ -201,6 +201,7 @@ public class Utilies {
             if (iconUrl != null && iconUrl.endsWith(".svg")) {
                 addByteArraySvgFromUrl(context, iconUrl, teamIconUrlValues);
             }
+//            Log.i(TAG, "teamUrlValues=" + teamIconUrlValues);
             if (teamIconUrlValues != null && teamIconUrlValues.size() > 1) {
                 context.getContentResolver().insert(DatabaseContract.icons_table.buildIconUrls(), teamIconUrlValues);
             }
@@ -274,7 +275,7 @@ public class Utilies {
 
         if (task == null || task.getStatus() == AsyncTask.Status.FINISHED) {
 
-            task = new AsyncTask<Object, Integer, String>() {
+task = new AsyncTask<Object, Integer, String>() {
                 @Override
                 protected String doInBackground(final Object... params) {
 
@@ -287,9 +288,15 @@ public class Utilies {
                     }
                     return null;
                 }
-            }.execute(context.getApplicationContext(), teamName, teamDataUrl);
 
-            mIconTasks.put(teamName, task);
+    @Override
+    protected void onPostExecute(final String s) {
+        super.onPostExecute(s);
+        mIconTasks.remove(s);
+    }
+}.execute(context.getApplicationContext(), teamName, teamDataUrl);
+
+            mIconTasks.put(teamName,task);
 
         }
     }
@@ -308,6 +315,7 @@ public class Utilies {
                     final ContentValues cv = new ContentValues();
                     cv.put(DatabaseContract.icons_table.TEAM_NAME_COL, teamName);
                     addByteArraySvgFromUrl(context, iconUrl, cv);
+//                    Log.i(TAG, "got SVG image teamUrlValues=" + cv);
                     if (cv.size() > 1) {
                         context.getContentResolver().insert(DatabaseContract.icons_table.buildIconUrls(), cv);
                     }
@@ -320,7 +328,11 @@ public class Utilies {
     private static void addByteArraySvgFromUrl(final Context context, final String url, final ContentValues values) {
         if (url != null && url.endsWith(".svg")) {
 
-            final StringRequest stringRequest = new StringRequest(Request.Method.GET, url.replace("http:", "https:"),
+            String iconSvgUrl = url.replace("http:", "https:");
+            if (!iconSvgUrl.startsWith("https:")) {
+                iconSvgUrl = "https://" + iconSvgUrl;
+            }
+            final StringRequest stringRequest = new StringRequest(Request.Method.GET, iconSvgUrl,
 
                     new Response.Listener<String>() {
                         @Override
@@ -334,7 +346,7 @@ public class Utilies {
                                     if (svg != null) {
                                         final int imageSize = (int) context.getResources().getDimension(R.dimen.team_crest_size);
                                         final Canvas canvas = new Canvas();
-                                        final int width = (int) Math.max(Math.ceil(svg.getDocumentWidth()), imageSize);
+                                        final int width = (int) Math.max(Math.ceil(svg.getDocumentWidth()),imageSize);
                                         final int height = (int) Math.max(Math.ceil(svg.getDocumentHeight()), imageSize);
                                         final Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                                         canvas.setBitmap(bmp);

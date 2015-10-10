@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -16,8 +17,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-
-import barqsoft.footballscores.service.StackWidgetService;
 
 /**
  * Implementation of App Widget functionality.
@@ -53,6 +52,8 @@ public class FootballScoresWidget extends AppWidgetProvider {
         }
 
         getRefreshRate(context);
+
+        super.onUpdate(context,appWidgetManager,appWidgetIds);
     }
 
 
@@ -70,35 +71,28 @@ public class FootballScoresWidget extends AppWidgetProvider {
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
 
-        final Intent intent = new Intent(context, StackWidgetService.class);
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        // When intents are compared, the extras are ignored, so we need to embed the extras
-        // into the data so that the extras will not be ignored.
-        intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
-        RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.football_scores_widget);
-        rv.setRemoteAdapter(appWidgetId, R.id.widget_list_view, intent);
+        Intent svcIntent=new Intent(context, StackWidgetService.class);
 
-        // The empty view is displayed when the collection has no items. It should be a sibling
-        // of the collection view.
-        rv.setEmptyView(R.id.widget_list_view, R.id.widget_empty_view);
+        svcIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        svcIntent.setData(Uri.parse(svcIntent.toUri(Intent.URI_INTENT_SCHEME)));
 
-        // This section makes it possible for items to have individualized behavior.
-        // It does this by setting up a pending intent template. Individuals items of a collection
-        // cannot set up their own pending intents. Instead, the collection as a whole sets
-        // up a pending intent template, and the individual items set a fillInIntent
-        // to create unique behavior on an item-by-item basis.
-        Intent toastIntent = new Intent(context, StackWidgetProvider.class);
-        // Set the action for the intent.
-        // When the user touches a particular view, it will have the effect of
-        // broadcasting TOAST_ACTION.
-        toastIntent.setAction(StackWidgetProvider.TOAST_ACTION);
-        toastIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
-        PendingIntent toastPendingIntent = PendingIntent.getBroadcast(context, 0, toastIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-        rv.setPendingIntentTemplate(R.id.widget_list_view, toastPendingIntent);
+        RemoteViews widget=new RemoteViews(context.getPackageName(),R.layout.football_scores_widget);
 
-        appWidgetManager.updateAppWidget(appWidgetId, rv);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            widget.setRemoteAdapter(R.id.widget_list_view, svcIntent);
+        } else {
+            widget.setRemoteAdapter(appWidgetId,R.id.widget_list_view, svcIntent);
+        }
+
+        Intent clickIntent=new Intent(context, MainActivity.class);
+        PendingIntent clickPI=PendingIntent.getActivity(context, 0, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        widget.setPendingIntentTemplate(R.id.widget_list_view, clickPI);
+        widget.setEmptyView(R.id.widget_list_view,R.id.widget_empty_view);
+
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId,R.id.widget_list_view);
+
+        appWidgetManager.updateAppWidget(appWidgetId, widget);
     }
 
     private static int getRefreshRate(final Context context) {
