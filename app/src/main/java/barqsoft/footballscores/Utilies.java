@@ -42,7 +42,7 @@ import barqsoft.footballscores.service.FetchService;
  * Created by yehya khaled on 3/3/2015.
  */
 public class Utilies {
-    private static final String TAG = "Utilies";
+    public static final int SERIE_A = 357;
 
     //JSON data
     // This set of league codes is for the 2015/2016 season. In fall of 2016, they will need to
@@ -58,25 +58,37 @@ public class Utilies {
     private static final String PRIMERA_LIGA = "402";
     private static final String Bundesliga3 = "403";
     private static final String EREDIVISIE = "404";*/
-
-    public static final int SERIE_A = 357;
     public static final int PREMIER_LEGAUE = 354;
     public static final int CHAMPIONS_LEAGUE = 362;
     public static final int PRIMERA_DIVISION = 358;
     public static final int BUNDESLIGA = 351;
-
     public static final float MILLIS_PER_SECOND = 1000f;
     public static final float MILLIS_PER_MINUTE = MILLIS_PER_SECOND * 60f;
     public static final float MILLIS_PER_HOUR = MILLIS_PER_MINUTE * 60f;
     public static final float MILLIS_PER_DAY = MILLIS_PER_HOUR * 24f;
-
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-
+    private static final String TAG = "Utilies";
     private static RequestQueue mQueue;
     private static HashMap<String, AsyncTask> mIconTasks = new HashMap<>();
 
-    public static String getLeague(int league_num) {
-        switch (league_num) {
+    public static String getLeague(final Context context, int league) {
+
+        final Cursor a = context.getContentResolver().query(DatabaseContract.league_table.buildLeagues(), null, null, new String[]{String.valueOf(league)}, null);
+
+        String leagueName = null;
+        if (a != null && a.moveToFirst()) {
+            leagueName = a.getString(a.getColumnIndex(DatabaseContract.league_table.LEAGUE_NAME_COL));
+        }
+
+        if (a != null) {
+            a.close();
+        }
+
+        if (!TextUtils.isEmpty(leagueName)) {
+            return leagueName;
+        }
+
+        switch (league) {
             case SERIE_A:
                 return "Seria A";
             case PREMIER_LEGAUE:
@@ -411,20 +423,52 @@ public class Utilies {
         int currentJulianDay = Time.getJulianDay(System.currentTimeMillis(), t.gmtoff);
         if (julianDay == currentJulianDay) {
             return context.getString(R.string.today);
-        } else if ( julianDay == currentJulianDay +1 ) {
+        } else if (julianDay == currentJulianDay + 1) {
             return context.getString(R.string.tomorrow);
-        }
-        else if ( julianDay == currentJulianDay -1)
-        {
+        } else if (julianDay == currentJulianDay - 1) {
             return context.getString(R.string.yesterday);
-        }
-        else
-        {
+        } else {
             Time time = new Time();
             time.setToNow();
             // Otherwise, the format is just the day of the week (e.g "Wednesday".
             SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE");
             return dayFormat.format(dateInMillis);
         }
+    }
+
+    public static void insertLeagueNameToDb(final Context context, final String league, final String leagueUrl, final String apiKey) {
+
+        final Cursor a = context.getContentResolver().query(DatabaseContract.league_table.buildLeagues(), null, null, new String[]{league}, null);
+
+        if (a == null) {
+            return;
+        }
+
+        if (!a.moveToFirst() || TextUtils.isEmpty(a.getString(a.getColumnIndex(DatabaseContract.league_table.LEAGUE_NAME_COL)))) {
+            try {
+                final String response = getUrlContent(Uri.parse(leagueUrl), apiKey);
+
+                if (!TextUtils.isEmpty(response)) {
+
+                    final JSONObject responseJson = new JSONObject(response);
+                    final String leagueName = responseJson.optString("caption");
+
+                    if (!TextUtils.isEmpty(leagueName)) {
+                        final ContentValues values = new ContentValues();
+                        values.put(DatabaseContract.league_table.LEAGUE_URL_COL, leagueUrl);
+                        values.put(DatabaseContract.league_table.LEAGUE_NAME_COL, leagueName);
+                        values.put(DatabaseContract.league_table.LEAGUE_ID_COL, league);
+                        context.getContentResolver().insert(DatabaseContract.league_table.buildLeagues(), values);
+                    }
+                } else {
+                    Log.e(TAG, "url " + leagueUrl + " returned no content");
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+
+        a.close();
+
     }
 }

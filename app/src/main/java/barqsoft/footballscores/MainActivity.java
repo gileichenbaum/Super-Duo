@@ -10,8 +10,6 @@ public class MainActivity extends ActionBarActivity
 {
     public static int sSelectedMatchId;
     public static int mCurrentFragment = 2;
-    public static String LOG_TAG = "MainActivity";
-    private final String save_tag = "Save Test";
     private PagerFragment mPagerFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

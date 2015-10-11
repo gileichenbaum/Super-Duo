@@ -26,7 +26,7 @@ import barqsoft.footballscores.Utilies;
  */
 public class FetchService extends IntentService {
     public static final String LOG_TAG = "FetchService";
-
+    public static final String TEAM_ICON_URL_JSON_KEY = "crestUrl";
     private static final String SEASON_LINK = "http://api.football-data.org/alpha/soccerseasons/";
     private static final String MATCH_LINK = "http://api.football-data.org/alpha/fixtures/";
     private static final String FIXTURES = "fixtures";
@@ -42,9 +42,6 @@ public class FetchService extends IntentService {
     private static final String MATCH_DAY = "matchday";
     private static final String HOME_TEAM_LINK = "homeTeam";
     private static final String AWAY_TEAM_LINK = "awayTeam";
-
-    public static final String TEAM_ICON_URL_JSON_KEY = "crestUrl";
-
     private String mApiKey;
 
     public FetchService() {
@@ -124,8 +121,11 @@ public class FetchService extends IntentService {
 
                 JSONObject match_data = matches.getJSONObject(i);
                 final JSONObject links = match_data.getJSONObject(LINKS);
-                league = links.getJSONObject(SOCCER_SEASON).getString("href");
-                league = league.replace(SEASON_LINK, "");
+                final String leagueUrl = links.getJSONObject(SOCCER_SEASON).getString("href");
+                league = leagueUrl.replace(SEASON_LINK, "");
+
+                Utilies.insertLeagueNameToDb(mContext, league, leagueUrl, mApiKey);
+
                 //This if statement controls which leagues we're interested in the data from.
                 //add leagues here in order to have them be added to the DB.
                 // If you are finding no data in the app, check that this contains all the leagues.
@@ -159,9 +159,8 @@ public class FetchService extends IntentService {
 
                     if (!isReal) {
                         //This if statement changes the dummy data's date to match our current date range.
-                        Date fragmentdate = new Date(System.currentTimeMillis() + ((i - 2) * 86400000));
-                        SimpleDateFormat mformat = new SimpleDateFormat("yyyy-MM-dd");
-                        mDate = mformat.format(fragmentdate);
+                        final Date fragmentDate = new Date(System.currentTimeMillis() + ((i - 2) * 86400000));
+                        mDate = Utilies.DATE_FORMAT.format(fragmentDate);
                     }
                 } catch (Exception e) {
                     Log.e(LOG_TAG, e.getMessage());
