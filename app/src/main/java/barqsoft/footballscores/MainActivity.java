@@ -18,6 +18,13 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 //        Log.d(LOG_TAG, "Reached MainActivity onCreate");
+
+        final Intent intent = getIntent();
+
+        if (intent != null && intent.hasExtra(FootballScoresWidget.MATCH_DAY)) {
+            mCurrentFragment = intent.getIntExtra(FootballScoresWidget.MATCH_DAY,mCurrentFragment);
+        }
+
         if (savedInstanceState == null) {
             mPagerFragment = new PagerFragment();
             getSupportFragmentManager().beginTransaction().add(R.id.container, mPagerFragment).commit();

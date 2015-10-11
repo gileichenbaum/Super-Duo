@@ -137,7 +137,7 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 //        Log.i(TAG,"home=" + matchData.mHomeTeamName + ", minute=" + gameMinute);
 
         final Bundle extras = new Bundle();
-        extras.putInt(FootballScoresWidget.EXTRA_ITEM, matchData.getDayDiff());
+        extras.putInt(FootballScoresWidget.MATCH_DAY, matchData.getDayDiff());
         final Intent fillInIntent = new Intent();
         fillInIntent.putExtras(extras);
         row.setOnClickFillInIntent(R.id.widget_item_container, fillInIntent);

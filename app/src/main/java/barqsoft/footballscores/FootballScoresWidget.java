@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -29,8 +28,8 @@ public class FootballScoresWidget extends AppWidgetProvider {
     private static final String TAG = "FootballScoresWidget";
     private static final float DEFAULT_REFRESH_INTERVAL = Utilies.MILLIS_PER_HOUR * 6f;
     private static final float DEFAULT_REFRESH_INTERVAL_IN_MINUTES = Utilies.MILLIS_PER_HOUR * 6f / Utilies.MILLIS_PER_MINUTE;
-    public static final String EXTRA_ITEM = "item";
-    private static final String TOAST_ACTION = "toast_action";
+    public static final String MATCH_DAY = "match_day";
+    private static final String OPEN_ACTIVITY = "open_activity";
 
     @Override
     public void onAppWidgetOptionsChanged(final Context context, final AppWidgetManager appWidgetManager, final int appWidgetId, final Bundle newOptions) {
@@ -41,18 +40,20 @@ public class FootballScoresWidget extends AppWidgetProvider {
     @Override
     public void onReceive(final Context context, final Intent intent) {
         super.onReceive(context, intent);
-        Log.i(TAG, "onReceive " + intent.getAction());
+//        Log.i(TAG, "onReceive " + intent.getAction());
         if (intent != null) {
             if (AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(intent.getAction())) {
                 final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
                 final ComponentName thisAppWidget = new ComponentName(context.getPackageName(), FootballScoresWidget.class.getName());
                 int[] appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget);
                 onUpdate(context, appWidgetManager, appWidgetIds);
-            } else if (intent.getAction().equals(TOAST_ACTION)) {
-                int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,AppWidgetManager.INVALID_APPWIDGET_ID);
-                final int matchId = intent.getIntExtra(EXTRA_ITEM, Integer.MIN_VALUE);
-                if (matchId > Integer.MIN_VALUE) {
-                    Toast.makeText(context, "Touched view " + matchId, Toast.LENGTH_SHORT).show();
+            } else if (intent.getAction().equals(OPEN_ACTIVITY)) {
+                final int matchDay = intent.getIntExtra(MATCH_DAY, Integer.MIN_VALUE);
+                if (matchDay > Integer.MIN_VALUE) {
+                    final Intent activityIntent = new Intent(context,MainActivity.class);
+                    activityIntent.putExtra(MATCH_DAY,matchDay + 1);
+                    activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    context.startActivity(activityIntent);
                 }
             }
         }
@@ -113,8 +114,8 @@ public class FootballScoresWidget extends AppWidgetProvider {
         Intent toastIntent = new Intent(context, FootballScoresWidget.class);
         // Set the action for the intent.
         // When the user touches a particular view, it will have the effect of
-        // broadcasting TOAST_ACTION.
-        toastIntent.setAction(FootballScoresWidget.TOAST_ACTION);
+        // broadcasting OPEN_ACTIVITY.
+        toastIntent.setAction(FootballScoresWidget.OPEN_ACTIVITY);
         toastIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         svcIntent.setData(Uri.parse(svcIntent.toUri(Intent.URI_INTENT_SCHEME)));
         PendingIntent toastPendingIntent = PendingIntent.getBroadcast(context, 0, toastIntent,PendingIntent.FLAG_UPDATE_CURRENT);
