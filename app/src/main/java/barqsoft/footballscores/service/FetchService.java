@@ -1,7 +1,6 @@
 package barqsoft.footballscores.service;
 
 import android.app.IntentService;
-import android.appwidget.AppWidgetManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -62,7 +61,6 @@ public class FetchService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         getData("n2");
         getData("p2");
-        sendBroadcast(new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE));
     }
 
     private void getData(String timeFrame) {

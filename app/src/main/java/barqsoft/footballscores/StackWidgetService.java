@@ -5,14 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import barqsoft.footballscores.service.FetchService;
 import barqsoft.footballscores.service.MatchData;
 
 /**
@@ -21,25 +20,25 @@ import barqsoft.footballscores.service.MatchData;
 public class StackWidgetService extends RemoteViewsService {
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-        Log.i("StackWidgetService","StackWidgetService onGetViewFactory");
+//        Log.i("StackWidgetService","StackWidgetService onGetViewFactory");
         return new StackRemoteViewsFactory(getApplicationContext(),intent);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i("StackWidgetService", "StackWidgetService onCreate");
+//        Log.i("StackWidgetService", "StackWidgetService onCreate");
     }
 
     @Override
     public void onStart(final Intent intent, final int startId) {
         super.onStart(intent, startId);
-        Log.i("StackWidgetService", "StackWidgetService onStart");
+//        Log.i("StackWidgetService", "StackWidgetService onStart");
     }
 
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId) {
-        Log.i("StackWidgetService","StackWidgetService onStartCommand");
+//        Log.i("StackWidgetService","StackWidgetService onStartCommand");
         return super.onStartCommand(intent, flags, startId);
     }
 }
@@ -51,7 +50,7 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     private final List<MatchData> mMatchList = new ArrayList<MatchData>();
 
     public StackRemoteViewsFactory(Context context, Intent intent) {
-        Log.i(TAG,"StackRemoteViewsFactory constructor");
+//        Log.i(TAG,"StackRemoteViewsFactory constructor");
         mContext = context;
         mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,AppWidgetManager.INVALID_APPWIDGET_ID);
     }
@@ -61,15 +60,8 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         // In onCreate() you setup any connections / cursors to your data source. Heavy lifting,
         // for example downloading or creating content etc, should be deferred to onDataSetChanged()
         // or getViewAt(). Taking more than 20 seconds in this call will result in an ANR.
-        Log.i(TAG,"StackRemoteViewsFactory onCreate");
+//        Log.i(TAG,"StackRemoteViewsFactory onCreate");
         onDataSetChanged();
-        update_scores();
-    }
-
-    private void update_scores()
-    {
-        Intent service_start = new Intent(mContext, FetchService.class);
-        mContext.startService(service_start);
     }
 
     @Override
@@ -77,18 +69,23 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
         mMatchList.clear();
 
-        final Cursor cursor = mContext.getContentResolver().query(DatabaseContract.BASE_CONTENT_URI,null,null,null,null);
-        if (cursor != null) {
-            try {
-                while (cursor.moveToNext()) {
-                    mMatchList.add(new MatchData(cursor));
+        for (int i=0;i<2;i++) {
+
+            final Date date = new Date(System.currentTimeMillis() + ((i - 1) * 86400000));
+
+            final Cursor cursor = mContext.getContentResolver().query(DatabaseContract.scores_table.buildScoreWithDate(), null, ScoresProvider.SCORES_BY_DATE, new String[]{Utilies.DATE_FORMAT.format(date)}, null);
+            if (cursor != null) {
+                try {
+                    while (cursor.moveToNext()) {
+                        mMatchList.add(new MatchData(cursor));
+                    }
+                } finally {
+                    cursor.close();
                 }
-            } finally {
-                cursor.close();
             }
         }
 
-        Log.i(TAG,"StackRemoteViewsFactory onDataSetChanged, size=" + mMatchList.size());
+//        Log.i(TAG,"StackRemoteViewsFactory onDataSetChanged, size=" + mMatchList.size());
     }
 
     @Override
@@ -99,7 +96,7 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     @Override
     public int getCount() {
 
-        Log.i(TAG,"StackRemoteViewsFactory getCount()=" + mMatchList.size());
+//        Log.i(TAG,"StackRemoteViewsFactory getCount()=" + mMatchList.size());
 
         return mMatchList.size();
     }
@@ -120,14 +117,30 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         row.setTextViewText(R.id.home_name, matchData.mHomeTeamName);
         row.setTextViewText(R.id.away_name, matchData.mAwayTeamName);
         row.setTextViewText(R.id.score_textview, matchData.mHomeTeamScore + " - " + matchData.mAwayTeamScore);
-        row.setTextViewText(R.id.data_textview, matchData.mDate + " " + matchData.mTime);
 
-        Intent i=new Intent();
-        Bundle extras=new Bundle();
 
-//        extras.putString(FootballScoresWidget.EXTRA_ITEM, matchData.mId);
-        i.putExtras(extras);
-        row.setOnClickFillInIntent(android.R.id.text1, i);
+        final int gameMinute = matchData.getCurrentMinute();
+
+        if (gameMinute > 0 && gameMinute < 105) {
+            if (gameMinute > 45 && gameMinute < 60) {
+                row.setTextViewText(R.id.data_textview, mContext.getString(R.string.half_time));
+            } else if (gameMinute >= 60) {
+                row.setTextViewText(R.id.data_textview, "'" + (gameMinute - 15));
+            } else {
+                row.setTextViewText(R.id.data_textview, "'" + gameMinute);
+            }
+        } else {
+            final String matchDay = Utilies.getDayName(mContext, System.currentTimeMillis() + ((matchData.getDayDiff()) * 86400000));
+            final String dateText = gameMinute < 0 ? (matchDay + " " + matchData.mTime) : matchDay;
+            row.setTextViewText(R.id.data_textview, dateText);
+        }
+//        Log.i(TAG,"home=" + matchData.mHomeTeamName + ", minute=" + gameMinute);
+
+        final Bundle extras = new Bundle();
+        extras.putInt(FootballScoresWidget.EXTRA_ITEM, matchData.getDayDiff());
+        final Intent fillInIntent = new Intent();
+        fillInIntent.putExtras(extras);
+        row.setOnClickFillInIntent(R.id.widget_item_container, fillInIntent);
 
         return(row);
     }

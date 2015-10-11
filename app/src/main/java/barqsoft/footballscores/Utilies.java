@@ -10,6 +10,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
+import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -32,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
 import barqsoft.footballscores.service.FetchService;
@@ -62,6 +64,14 @@ public class Utilies {
     public static final int CHAMPIONS_LEAGUE = 362;
     public static final int PRIMERA_DIVISION = 358;
     public static final int BUNDESLIGA = 351;
+
+    public static final float MILLIS_PER_SECOND = 1000f;
+    public static final float MILLIS_PER_MINUTE = MILLIS_PER_SECOND * 60f;
+    public static final float MILLIS_PER_HOUR = MILLIS_PER_MINUTE * 60f;
+    public static final float MILLIS_PER_DAY = MILLIS_PER_HOUR * 24f;
+
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
     private static RequestQueue mQueue;
     private static HashMap<String, AsyncTask> mIconTasks = new HashMap<>();
 
@@ -275,7 +285,7 @@ public class Utilies {
 
         if (task == null || task.getStatus() == AsyncTask.Status.FINISHED) {
 
-task = new AsyncTask<Object, Integer, String>() {
+            task = new AsyncTask<Object, Integer, String>() {
                 @Override
                 protected String doInBackground(final Object... params) {
 
@@ -289,14 +299,14 @@ task = new AsyncTask<Object, Integer, String>() {
                     return null;
                 }
 
-    @Override
-    protected void onPostExecute(final String s) {
-        super.onPostExecute(s);
-        mIconTasks.remove(s);
-    }
-}.execute(context.getApplicationContext(), teamName, teamDataUrl);
+                @Override
+                protected void onPostExecute(final String s) {
+                    super.onPostExecute(s);
+                    mIconTasks.remove(s);
+                }
+            }.execute(context.getApplicationContext(), teamName, teamDataUrl);
 
-            mIconTasks.put(teamName,task);
+            mIconTasks.put(teamName, task);
 
         }
     }
@@ -346,7 +356,7 @@ task = new AsyncTask<Object, Integer, String>() {
                                     if (svg != null) {
                                         final int imageSize = (int) context.getResources().getDimension(R.dimen.team_crest_size);
                                         final Canvas canvas = new Canvas();
-                                        final int width = (int) Math.max(Math.ceil(svg.getDocumentWidth()),imageSize);
+                                        final int width = (int) Math.max(Math.ceil(svg.getDocumentWidth()), imageSize);
                                         final int height = (int) Math.max(Math.ceil(svg.getDocumentHeight()), imageSize);
                                         final Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                                         canvas.setBitmap(bmp);
@@ -388,6 +398,33 @@ task = new AsyncTask<Object, Integer, String>() {
             }
 
             mQueue.add(stringRequest);
+        }
+    }
+
+    public static String getDayName(Context context, long dateInMillis) {
+        // If the date is today, return the localized version of "Today" instead of the actual
+        // day name.
+
+        Time t = new Time();
+        t.setToNow();
+        int julianDay = Time.getJulianDay(dateInMillis, t.gmtoff);
+        int currentJulianDay = Time.getJulianDay(System.currentTimeMillis(), t.gmtoff);
+        if (julianDay == currentJulianDay) {
+            return context.getString(R.string.today);
+        } else if ( julianDay == currentJulianDay +1 ) {
+            return context.getString(R.string.tomorrow);
+        }
+        else if ( julianDay == currentJulianDay -1)
+        {
+            return context.getString(R.string.yesterday);
+        }
+        else
+        {
+            Time time = new Time();
+            time.setToNow();
+            // Otherwise, the format is just the day of the week (e.g "Wednesday".
+            SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE");
+            return dayFormat.format(dateInMillis);
         }
     }
 }
