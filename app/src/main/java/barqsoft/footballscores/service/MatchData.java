@@ -1,6 +1,9 @@
 package barqsoft.footballscores.service;
 
+import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,20 +26,13 @@ public class MatchData {
     public final String mDate;
     public final String mTime;
     public final String mId;
+    public final Bitmap mHomeTeamIconBmp;
+    public final Bitmap mAwayTeamIconBmp;
     private Date mMatchDate;
     private int mCurrentMinute;
     private int mDayDiff;
 
-    /**
-     *   home_name = (TextView) view.findViewById(R.id.home_name);
-     away_name = (TextView) view.findViewById(R.id.away_name);
-     score     = (TextView) view.findViewById(R.id.score_textview);
-     date      = (TextView) view.findViewById(R.id.data_textview);
-     home_crest = (ImageView) view.findViewById(R.id.home_crest);
-     away_crest = (ImageView) view.findViewById(R.id.away_crest);
-     */
-
-    public MatchData(final Cursor cursor) {
+    public MatchData(final Context context, final Cursor cursor) {
         mId = cursor.getString(cursor.getColumnIndex(DatabaseContract.scores_table.MATCH_ID));
         mHomeTeamName = cursor.getString(cursor.getColumnIndex(DatabaseContract.scores_table.HOME_COL));
         mAwayTeamName = cursor.getString(cursor.getColumnIndex(DatabaseContract.scores_table.AWAY_COL));
@@ -44,6 +40,9 @@ public class MatchData {
         mHomeTeamScore = String.valueOf(Math.max(cursor.getInt(cursor.getColumnIndex(DatabaseContract.scores_table.HOME_GOALS_COL)), 0));
         mDate = cursor.getString(cursor.getColumnIndex(DatabaseContract.scores_table.DATE_COL));
         mTime = cursor.getString(cursor.getColumnIndex(DatabaseContract.scores_table.TIME_COL));
+
+        mHomeTeamIconBmp = getTeamIcon(context, mHomeTeamName);
+        mAwayTeamIconBmp = getTeamIcon(context, mAwayTeamName);
 
         final Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
         final Date now = calendar.getTime();
@@ -59,11 +58,32 @@ public class MatchData {
         }
     }
 
+    private Bitmap getTeamIcon(final Context context, final String teamName) {
+
+        Bitmap bmp = null;
+
+        final Cursor c = context.getContentResolver().query(DatabaseContract.icons_table.buildIconUrlsWithTeamNames(), null, null, new String[]{teamName}, null);
+
+        if (c.moveToFirst()) {
+            byte[] imageBytes = c.getBlob(c.getColumnIndex(DatabaseContract.icons_table.IMAGE_BLOB));
+            if (imageBytes != null && imageBytes.length > 0) {
+                bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+            }
+            c.close();
+        }
+
+        return bmp;
+    }
+
     public int getCurrentMinute() {
         return mCurrentMinute;
     }
 
     public int getDayDiff() {
         return mDayDiff;
+    }
+
+    public Date getMatchDate() {
+        return mMatchDate;
     }
 }

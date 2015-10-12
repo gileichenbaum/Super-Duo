@@ -61,14 +61,14 @@ public class ScoresAdapter extends CursorAdapter {
 
         final int homeTeamCrestByTeamName = Utilies.getTeamCrestByTeamName(homeTeamName);
         if (homeTeamCrestByTeamName == 0) {
-            setupImageFromDb(context, mHolder, homeTeamName, mHolder.home_crest);
+            setupImageFromDb(context, homeTeamName, mHolder.home_crest);
         } else {
             mHolder.home_crest.setImageResource(homeTeamCrestByTeamName);
         }
 
         final int awayTeamCrestByTeamName = Utilies.getTeamCrestByTeamName(awayTeamName);
         if (awayTeamCrestByTeamName == 0) {
-            setupImageFromDb(context, mHolder, awayTeamName, mHolder.away_crest);
+            setupImageFromDb(context, awayTeamName, mHolder.away_crest);
         } else {
             mHolder.away_crest.setImageResource(awayTeamCrestByTeamName);
         }
@@ -100,7 +100,7 @@ public class ScoresAdapter extends CursorAdapter {
 
     }
 
-    private void setupImageFromDb(final Context context, final ViewHolder mHolder, final String teamName, final ImageView imageView) {
+    private void setupImageFromDb(final Context context, final String teamName, final ImageView imageView) {
 
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
 
