@@ -3,13 +3,10 @@ package it.jaschke.alexandria;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.test.AndroidTestCase;
-import android.util.Log;
 
 import it.jaschke.alexandria.data.AlexandriaContract;
-import it.jaschke.alexandria.data.DbHelper;
 
 /**
  * Created by saj on 23/12/14.
@@ -96,7 +93,7 @@ public class TestProvider extends AndroidTestCase {
 
     }
 
-    public void testInsertRead(){
+    public void testInsertRead() {
 
         insertReadBook();
         insertReadAuthor();
@@ -106,7 +103,7 @@ public class TestProvider extends AndroidTestCase {
         readFullList();
     }
 
-    public void insertReadBook(){
+    public void insertReadBook() {
         ContentValues bookValues = TestDb.getBookValues();
 
         Uri bookUri = mContext.getContentResolver().insert(AlexandriaContract.BookEntry.CONTENT_URI, bookValues);
@@ -135,13 +132,13 @@ public class TestProvider extends AndroidTestCase {
 
     }
 
-    public void insertReadAuthor(){
+    public void insertReadAuthor() {
         ContentValues authorValues = TestDb.getAuthorValues();
 
         Uri authorUri = mContext.getContentResolver().insert(AlexandriaContract.AuthorEntry.CONTENT_URI, authorValues);
         long authorRowId = ContentUris.parseId(authorUri);
         assertTrue(authorRowId != -1);
-        assertEquals(authorRowId,TestDb.ean);
+        assertEquals(authorRowId, TestDb.ean);
 
         Cursor cursor = mContext.getContentResolver().query(
                 AlexandriaContract.AuthorEntry.CONTENT_URI,
@@ -165,13 +162,13 @@ public class TestProvider extends AndroidTestCase {
 
     }
 
-    public void insertReadCategory(){
+    public void insertReadCategory() {
         ContentValues categoryValues = TestDb.getCategoryValues();
 
         Uri categoryUri = mContext.getContentResolver().insert(AlexandriaContract.CategoryEntry.CONTENT_URI, categoryValues);
         long categoryRowId = ContentUris.parseId(categoryUri);
         assertTrue(categoryRowId != -1);
-        assertEquals(categoryRowId,TestDb.ean);
+        assertEquals(categoryRowId, TestDb.ean);
 
         Cursor cursor = mContext.getContentResolver().query(
                 AlexandriaContract.CategoryEntry.CONTENT_URI,
@@ -195,7 +192,7 @@ public class TestProvider extends AndroidTestCase {
 
     }
 
-    public void readFullBook(){
+    public void readFullBook() {
 
         Cursor cursor = mContext.getContentResolver().query(
                 AlexandriaContract.BookEntry.buildFullBookUri(TestDb.ean),
@@ -205,10 +202,10 @@ public class TestProvider extends AndroidTestCase {
                 null  // sort order
         );
 
-         TestDb.validateCursor(cursor, TestDb.getFullDetailValues());
+        TestDb.validateCursor(cursor, TestDb.getFullDetailValues());
     }
 
-    public void readFullList(){
+    public void readFullList() {
 
         Cursor cursor = mContext.getContentResolver().query(
                 AlexandriaContract.BookEntry.FULL_CONTENT_URI,

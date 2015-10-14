@@ -84,27 +84,6 @@ public class CameraSourcePreview extends ViewGroup {
         }
     }
 
-    private class SurfaceCallback implements SurfaceHolder.Callback {
-        @Override
-        public void surfaceCreated(SurfaceHolder surface) {
-            mSurfaceAvailable = true;
-            try {
-                startIfReady();
-            } catch (IOException e) {
-                Log.e(TAG, "Could not start camera source.", e);
-            }
-        }
-
-        @Override
-        public void surfaceDestroyed(SurfaceHolder surface) {
-            mSurfaceAvailable = false;
-        }
-
-        @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        }
-    }
-
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         int width = right - left;
@@ -159,5 +138,26 @@ public class CameraSourcePreview extends ViewGroup {
 
         Log.d(TAG, "isPortraitMode returning false by default");
         return false;
+    }
+
+    private class SurfaceCallback implements SurfaceHolder.Callback {
+        @Override
+        public void surfaceCreated(SurfaceHolder surface) {
+            mSurfaceAvailable = true;
+            try {
+                startIfReady();
+            } catch (IOException e) {
+                Log.e(TAG, "Could not start camera source.", e);
+            }
+        }
+
+        @Override
+        public void surfaceDestroyed(SurfaceHolder surface) {
+            mSurfaceAvailable = false;
+        }
+
+        @Override
+        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        }
     }
 }

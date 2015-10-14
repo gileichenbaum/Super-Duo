@@ -20,21 +20,6 @@ public class VisionApiFix {
  */
 
     /**
-     * Custom annotation to allow only valid focus modes.
-     */
-    @StringDef({
-            Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE,
-            Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO,
-            Camera.Parameters.FOCUS_MODE_AUTO,
-            Camera.Parameters.FOCUS_MODE_EDOF,
-            Camera.Parameters.FOCUS_MODE_FIXED,
-            Camera.Parameters.FOCUS_MODE_INFINITY,
-            Camera.Parameters.FOCUS_MODE_MACRO
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface FocusMode {}
-
-    /**
      * <p>
      * Sets the Mobile Vision API provided {@link com.google.android.gms.vision.CameraSource}'s
      * focus mode. Use {@link Camera.Parameters#FOCUS_MODE_CONTINUOUS_PICTURE} or
@@ -93,5 +78,21 @@ public class VisionApiFix {
         }
 
         return false;
+    }
+
+    /**
+     * Custom annotation to allow only valid focus modes.
+     */
+    @StringDef({
+            Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE,
+            Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO,
+            Camera.Parameters.FOCUS_MODE_AUTO,
+            Camera.Parameters.FOCUS_MODE_EDOF,
+            Camera.Parameters.FOCUS_MODE_FIXED,
+            Camera.Parameters.FOCUS_MODE_INFINITY,
+            Camera.Parameters.FOCUS_MODE_MACRO
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface FocusMode {
     }
 }

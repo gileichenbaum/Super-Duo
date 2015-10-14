@@ -55,13 +55,11 @@ import it.jaschke.alexandria.R;
  * barcode.
  */
 public final class BarcodeScanActivity extends AppCompatActivity {
+    public static final String BARCODE = "barcode";
     private static final String TAG = "MultiTracker";
-
     private static final int RC_HANDLE_GMS = 9001;
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
-    public static final String BARCODE = "barcode";
-
     private CameraSource mCameraSource = null;
     private CameraSourcePreview mPreview;
 

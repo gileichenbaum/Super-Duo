@@ -25,6 +25,73 @@ public class TestDb extends AndroidTestCase {
     public final static String author = "Stuart Jonathan Russell";
     public final static String category = "Computers";
 
+    static void validateCursor(Cursor valueCursor, ContentValues expectedValues) {
+
+        assertTrue(valueCursor.moveToFirst());
+
+        Set<Map.Entry<String, Object>> valueSet = expectedValues.valueSet();
+        for (Map.Entry<String, Object> entry : valueSet) {
+            String columnName = entry.getKey();
+            int idx = valueCursor.getColumnIndex(columnName);
+            assertFalse(columnName, idx == -1);
+            String expectedValue = entry.getValue().toString();
+            assertEquals(expectedValue, valueCursor.getString(idx));
+        }
+        valueCursor.close();
+    }
+
+    public static ContentValues getBookValues() {
+
+        final ContentValues values = new ContentValues();
+        values.put(AlexandriaContract.BookEntry._ID, ean);
+        values.put(AlexandriaContract.BookEntry.TITLE, title);
+        values.put(AlexandriaContract.BookEntry.IMAGE_URL, imgUrl);
+        values.put(AlexandriaContract.BookEntry.SUBTITLE, subtitle);
+        values.put(AlexandriaContract.BookEntry.DESC, desc);
+
+        return values;
+    }
+
+    public static ContentValues getAuthorValues() {
+
+        final ContentValues values = new ContentValues();
+        values.put(AlexandriaContract.AuthorEntry._ID, ean);
+        values.put(AlexandriaContract.AuthorEntry.AUTHOR, author);
+
+        return values;
+    }
+
+    public static ContentValues getCategoryValues() {
+
+        final ContentValues values = new ContentValues();
+        values.put(AlexandriaContract.CategoryEntry._ID, ean);
+        values.put(AlexandriaContract.CategoryEntry.CATEGORY, category);
+
+        return values;
+    }
+
+    public static ContentValues getFullDetailValues() {
+
+        final ContentValues values = new ContentValues();
+        values.put(AlexandriaContract.BookEntry.TITLE, title);
+        values.put(AlexandriaContract.BookEntry.IMAGE_URL, imgUrl);
+        values.put(AlexandriaContract.BookEntry.SUBTITLE, subtitle);
+        values.put(AlexandriaContract.BookEntry.DESC, desc);
+        values.put(AlexandriaContract.AuthorEntry.AUTHOR, author);
+        values.put(AlexandriaContract.CategoryEntry.CATEGORY, category);
+        return values;
+    }
+
+    public static ContentValues getFullListValues() {
+
+        final ContentValues values = new ContentValues();
+        values.put(AlexandriaContract.BookEntry.TITLE, title);
+        values.put(AlexandriaContract.BookEntry.IMAGE_URL, imgUrl);
+        values.put(AlexandriaContract.AuthorEntry.AUTHOR, author);
+        values.put(AlexandriaContract.CategoryEntry.CATEGORY, category);
+        return values;
+    }
+
     public void testCreateDb() throws Throwable {
         mContext.deleteDatabase(DbHelper.DATABASE_NAME);
         SQLiteDatabase db = new DbHelper(
@@ -109,72 +176,5 @@ public class TestDb extends AndroidTestCase {
 
         dbHelper.close();
 
-    }
-
-    static void validateCursor(Cursor valueCursor, ContentValues expectedValues) {
-
-        assertTrue(valueCursor.moveToFirst());
-
-        Set<Map.Entry<String, Object>> valueSet = expectedValues.valueSet();
-        for (Map.Entry<String, Object> entry : valueSet) {
-            String columnName = entry.getKey();
-            int idx = valueCursor.getColumnIndex(columnName);
-            assertFalse(columnName,idx == -1);
-            String expectedValue = entry.getValue().toString();
-            assertEquals(expectedValue, valueCursor.getString(idx));
-        }
-        valueCursor.close();
-    }
-
-    public static ContentValues getBookValues() {
-
-        final ContentValues values = new ContentValues();
-        values.put(AlexandriaContract.BookEntry._ID, ean);
-        values.put(AlexandriaContract.BookEntry.TITLE, title);
-        values.put(AlexandriaContract.BookEntry.IMAGE_URL, imgUrl);
-        values.put(AlexandriaContract.BookEntry.SUBTITLE, subtitle);
-        values.put(AlexandriaContract.BookEntry.DESC, desc);
-
-        return values;
-    }
-
-    public static ContentValues getAuthorValues() {
-
-        final ContentValues values= new ContentValues();
-        values.put(AlexandriaContract.AuthorEntry._ID, ean);
-        values.put(AlexandriaContract.AuthorEntry.AUTHOR, author);
-
-        return values;
-    }
-
-    public static ContentValues getCategoryValues() {
-
-        final ContentValues values= new ContentValues();
-        values.put(AlexandriaContract.CategoryEntry._ID, ean);
-        values.put(AlexandriaContract.CategoryEntry.CATEGORY, category);
-
-        return values;
-    }
-
-    public static ContentValues getFullDetailValues() {
-
-        final ContentValues values= new ContentValues();
-        values.put(AlexandriaContract.BookEntry.TITLE, title);
-        values.put(AlexandriaContract.BookEntry.IMAGE_URL, imgUrl);
-        values.put(AlexandriaContract.BookEntry.SUBTITLE, subtitle);
-        values.put(AlexandriaContract.BookEntry.DESC, desc);
-        values.put(AlexandriaContract.AuthorEntry.AUTHOR, author);
-        values.put(AlexandriaContract.CategoryEntry.CATEGORY, category);
-        return values;
-    }
-
-    public static ContentValues getFullListValues() {
-
-        final ContentValues values= new ContentValues();
-        values.put(AlexandriaContract.BookEntry.TITLE, title);
-        values.put(AlexandriaContract.BookEntry.IMAGE_URL, imgUrl);
-        values.put(AlexandriaContract.AuthorEntry.AUTHOR, author);
-        values.put(AlexandriaContract.CategoryEntry.CATEGORY, category);
-        return values;
     }
 }

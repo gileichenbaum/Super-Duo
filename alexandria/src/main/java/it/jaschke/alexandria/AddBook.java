@@ -271,6 +271,8 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         ((TextView) rootView.findViewById(R.id.bookSubTitle)).setText(bookSubTitle);
 
         String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
+
+        //TextUtils.isEmpty checks for null or empty string
         if (!TextUtils.isEmpty(authors)) {
             String[] authorsArr = authors.split(",");
             ((TextView) rootView.findViewById(R.id.authors)).setLines(authorsArr.length);
@@ -278,6 +280,8 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         }
 
         String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
+
+        //TextUtils.isEmpty checks for null or empty string
         if (!TextUtils.isEmpty(imgUrl) && Patterns.WEB_URL.matcher(imgUrl).matches()) {
             new DownloadImage((ImageView) rootView.findViewById(R.id.bookCover)).execute(imgUrl);
             rootView.findViewById(R.id.bookCover).setVisibility(View.VISIBLE);
